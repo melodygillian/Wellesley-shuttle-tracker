@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wellesley Shuttle Finder</title>
+  <style>
+    /* Morandi color palette */
+    :root {
+      --champagne: #F7E7CE;
+      --pearl-gray: #DCD7D1;
+      --eucharis: #919b87;
+      --soph-gray: #5a595e;
+      --coral: #FF7F50;
+      --salmon: #FA8072;
+      --tiff-blue: #0ABAB5;
+      --burgundy: #800020;
+    }
+    body {
+      background: var(--champagne);
+      color: var(--soph-gray);
+      font-family: 'Avenir', 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    .container {
+      background: var(--pearl-gray);
+      max-width: 400px;
+      margin: 40px auto;
+      border-radius: 18px;
+      box-shadow: 0 4px 12px rgba(145, 155, 135, 0.16);
+      padding: 30px 18px;
+    }
+    h1 {
+      color: var(--eucharis);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-size: 1.6em;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .info {
+      color: var(--soph-gray);
+      margin-bottom: 20px;
+      font-size: 1em;
+      font-weight: 400;
+    }
+    .result {
+      background: var(--champagne);
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(250, 128, 114, 0.07);
+      font-size: 1.08em;
+    }
+    .label {
+      color: var(--tiff-blue);
+      font-weight: 700;
+      margin-right: 6px;
+    }
+    .walk-time {
+      color: var(--coral);
+      font-weight: 500;
+    }
+    .shuttle-type {
+      color: var(--burgundy);
+      font-weight: 500;
+    }
+    footer {
+      color: var(--soph-gray);
+      text-align: center;
+      font-size: 0.85em;
+      margin-top: 24px;
+      opacity: 0.7;
+    }
+    @media (max-width:440px) {
+      .container { max-width: 98vw; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Shuttle Finder</h1>
+  <div class="info" id="status">
+    Detecting location and schedule&hellip;
+  </div>
+  <div class="result" id="result"></div>
+</div>
+<footer>
+  Morandi color series<br>Anonymous, privacy-respecting design
+</footer>
+<script>
+  const stops = [
+    // Example coordinates for campus/off-campus stops (replace/expand with real schedule data)
+    { name: "Campus Main Entrance", lat: 42.2965, lon: -71.3051, type: "campus" },
+    { name: "Davis Lot", lat: 42.2969, lon: -71.3032, type: "campus" },
+    { name: "Babson College", lat: 42.2992, lon: -71.2612, type: "off" },
+    { name: "Harvard Square", lat: 42.3736, lon: -71.1097, type: "off" }
+  ];
+
+  // Example bus schedule (expand with real schedule data)
+  const weekday_schedule = [
+    { stop: "Davis Lot", time: "08:15", type: "Exchange" },
+    { stop: "Campus Main Entrance", time: "09:45", type: "Exchange" },
+    { stop: "Babson College", time: "13:15", type: "Exchange" },
+    { stop: "Harvard Square", time: "16:30", type: "Exchange" }
+  ];
+  const weekend_schedule = [
+    { stop: "Davis Lot", time: "09:00", type: "Senate" },
+    { stop: "Campus Main Entrance", time: "10:30", type: "Senate" },
+    { stop: "Harvard Square", time: "14:15", type: "Senate" }
+  ];
+
+  function toTime(str) { return str.split(':').map(Number); }
+  function nowAsTime() {
+    let d = new Date();
+    return [d.getHours(), d.getMinutes()];
+  }
+  function timeDiff(a, b) { // returns minutes from a to b
+    return (b[0] - a[0]) * 60 + (b[1] - a[1]);
+  }
+
+  function getDayType() {
+    let day = (new Date()).getDay();
+    return (day === 0 || day === 6) ? 'weekend' : 'weekday';
+  }
+
+  function getDistance(lat1, lon1, lat2, lon2) {
+    // haversine formula
+    const R = 6371;
+    const dLat = (lat2-lat1)*Math.PI/180;
+    const dLon = (lon2-lon1)*Math.PI/180;
+    const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+      Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180) *
+      Math.sin(dLon/2)*Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function getClosestStop(lat, lon) {
+    let minDist = 1e6;
+    let best = null;
+    for (let st of stops) {
+      let dist = getDistance(lat, lon, st.lat, st.lon);
+      if (dist < minDist) { minDist = dist; best = st; }
+    }
+    return best;
+  }
+  function getNextBus(dayType, stop, now) {
+    const schedule = dayType==='weekend' ? weekend_schedule : weekday_schedule;
+    for (let entry of schedule) {
+      if (entry.stop === stop && timeDiff(now, toTime(entry.time)) >= 0) {
+        return entry;
+      }
+    }
+    // fallback: next bus today at any stop
+    for (let entry of schedule) {
+      if (timeDiff(now, toTime(entry.time)) >= 0) {
+        return entry;
+      }
+    }
+    return null;
+  }
+  function walkingDirections(from, to) {
+    let dist = getDistance(from.lat, from.lon, to.lat, to.lon);
+    let mins = Math.round(dist / 5 * 60); // 5km/h walking speed
+    return `Walk from ${from.name} to ${to.name} (${dist.toFixed(2)} km, about ${mins} min).`;
+  }
+
+  function main(lat, lon) {
+    const now = nowAsTime();
+    const dayType = getDayType();
+    // classify zone by distance to campus
+    const campusCenter = stops[0]; // using main entrance for simplicity
+    const isCampus = getDistance(lat, lon, campusCenter.lat, campusCenter.lon) < 0.6;
+    let from, to;
+    if (isCampus) {
+      from = getClosestStop(lat, lon);
+      to = stops.find(x => x.type === "off");
+    } else {
+      from = getClosestStop(lat, lon);
+      to = stops.find(x => x.type === "campus");
+    }
+    let nextBus = getNextBus(dayType, from.name, now);
+    let result = "";
+    if (nextBus) {
+      result += `<div><span class="label">Next bus:</span>
+           ${nextBus.time}   <span class="shuttle-type">[${nextBus.type}]</span>
+           <br>at <span class="label">${nextBus.stop}</span></div>`;
+    } else {
+      result += `<div>No more buses today.</div>`;
+    }
+    result += `<div class="walk-time">${walkingDirections({name: "your spot", lat, lon}, from)}</div>`;
+    document.getElementById('result').innerHTML = result;
+    document.getElementById('status').innerText = `Location detected (${isCampus ? "On campus" : "Off campus"}).`;
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      main(pos.coords.latitude, pos.coords.longitude);
+    }, err => {
+      document.getElementById('status').innerText = "Location not available. Please enable location services.";
+    });
+  } else {
+    document.getElementById('status').innerText = "Geolocation is not supported on this device.";
+  }
+</script>
+</body>
+</html>
