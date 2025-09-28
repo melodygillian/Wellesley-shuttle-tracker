@@ -512,41 +512,41 @@ const exchangeBus = [
     return nextBus;
   }
   // Build full trip table with named stops and columns in order
+  // Build full trip table with named stops and columns in order
   function buildScheduleTable(schedule, onCampus) {
-    // Ordered stops fully showing outbound and inbound at start and end
-    function buildScheduleTable(schedule, onCampus) {
-  // Ordered stops including Founders
-  const orderedStops = [
-    "Chapel_out",
-    "Founders_out",
-    "Alumnae_out",
-    "Harvard Sq.",
-    "77 Mass Ave.",
-    "350 Mass Ave.",
-    "Vassar St., Bldg 34",
-    "Kendall Sq. T Stop",
-    "Marlboro Market",
-    "Macy's",
-    "AMC Theater",
-    "Barnes & Noble",
-    "Target",
-    "Alumnae_in",
-    "Founders_in",
-    "Chapel_in"
-  ];
-  // Display stop headers with clearer labels
-  const headers = orderedStops.map(s=>stops[s]?.label || s).join('</th><th>');
-  let table = '<table><thead><tr><th>Bus</th><th>' + headers + '</th></tr></thead><tbody>';
-  for(const trip of schedule) {
-    table += '<tr><td>' + trip.bus + '</td>';
-    for(const stopName of orderedStops) {
-      table += '<td>' + (trip.stopTimes[stopName] || '') + '</td>';
+    // Ordered stops including Founders and all off-campus stops
+    const orderedStops = [
+      "Chapel_out",
+      "Founders_out",
+      "Alumnae_out",
+      "Harvard Sq.",
+      "77 Mass Ave.",
+      "350 Mass Ave.",
+      "Vassar St., Bldg 34",
+      "Kendall Sq. T Stop",
+      "Marlboro Market",
+      "Macy's",
+      "AMC Theater",
+      "Barnes & Noble",
+      "Target",
+      "Alumnae_in",
+      "Founders_in",
+      "Chapel_in"
+    ];
+    // Display stop headers with clearer labels
+    const headers = orderedStops.map(s => stops[s]?.label || s).join('</th><th>');
+    let table = '<table><thead><tr><th>Bus</th><th>' + headers + '</th></tr></thead><tbody>';
+    for (const trip of schedule) {
+      table += '<tr><td>' + trip.bus + '</td>';
+      for (const stopName of orderedStops) {
+        table += '<td>' + (trip.stopTimes[stopName] || '') + '</td>';
+      }
+      table += '</tr>';
     }
-    table += '</tr>';
+    table += '</tbody></table>';
+    return table;
   }
-  table += '</tbody></table>';
-  return table;
-}
+
 
   function getTodaySchedule() {
       const now = new Date();
