@@ -46,6 +46,44 @@ table {
   margin-right: auto;
 }
 
+  /* Ensure container handles horizontal scrolling */
+.shuttle-table-wrap {
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+/* Scroll wrapper for tables */
+.shuttle-table-wrap > div {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* smooth scrolling for iOS */
+  border-radius: 10px;
+  margin-top: 6px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 400px; /* minimum width to avoid squishing */
+  background: var(--light-pink);
+  margin: 0 auto;
+  font-size: 0.98em;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th, td {
+  border: 1px solid var(--deep-pink);
+  padding: 7px 12px;
+  white-space: nowrap; /* keep content from wrapping */
+}
+
+th {
+  background: var(--cute-pink);
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+}
+
   .cute-sticker {
     font-size: 2.2em;
     position: absolute;
@@ -556,35 +594,26 @@ function getActiveStops(schedule, direction) {
   }
 
    function buildScheduleTable(schedule, color) {
-    const orderedStops = [
-      "Chapel_out",
-      "Founders_out",
-      "Alumnae_out",
-      "Harvard Sq.",
-      "77 Mass Ave.",
-      "350 Mass Ave.",
-      "Vassar St., Bldg 34",
-      "Kendall Sq. T Stop",
-      "Marlboro Market",
-      "Macy's",
-      "AMC Theater",
-      "Barnes & Noble",
-      "Target",
-      "Alumnae_in",
-      "Founders_in",
-      "Chapel_in"
-    ];
-    const tableStyle = `background: ${color}11; border-radius: 10px;`;
-    const headers = orderedStops.map(s=>stops[s]?.label||s).join('</th><th>');
-    let table = `<table style="${tableStyle}"><thead><tr><th>Bus</th><th>${headers}</th></tr></thead><tbody>`;
-    for(const trip of schedule){
-      table += '<tr><td>'+trip.bus+'</td>';
-      for(const stopName of orderedStops){
-        table+= '<td>'+(trip.stopTimes[stopName]||'')+'</td>';
+    // Dynamically gather all stops that appear in this schedule’s trips
+    const stopSet = new Set();
+    schedule.forEach(trip => {
+      Object.keys(trip.stopTimes).forEach(stop => stopSet.add(stop));
+    });
+    const orderedStops = Array.from(stopSet);
+  
+    // Build header with labels
+    const headers = orderedStops.map(s => stops[s]?.label || s).join('</th><th>');
+    
+    const tableStyle = `background: ${color}11; border-radius: 10px; overflow-x: auto;`;
+    let table = `<div style="overflow-x:auto;"><table style="${tableStyle}"><thead><tr><th>Bus</th><th>${headers}</th></tr></thead><tbody>`;
+    for (const trip of schedule) {
+      table += '<tr><td>' + trip.bus + '</td>';
+      for (const stopName of orderedStops) {
+        table += '<td>' + (trip.stopTimes[stopName] || '') + '</td>';
       }
-      table +='</tr>';
+      table += '</tr>';
     }
-    table+='</tbody></table>'; 
+    table += '</tbody></table></div>';
     return table;
   }
 
