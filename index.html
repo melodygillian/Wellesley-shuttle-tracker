@@ -22,15 +22,30 @@
     color: var(--deep-pink);
     font-family: 'Quicksand', 'Avenir', Arial, sans-serif;
   }
-  .container {
-    background: var(--pearl-gray);
-    box-shadow: 0 6px 24px #fd9cbc18;
-    padding: 40px 24px;
-    margin: 24px auto;
-    max-width: 520px;
-    border-radius: 30px;
-    position: relative;
-  }
+.container {
+  background: var(--pearl-gray);
+  box-shadow: 0 6px 24px #fd9cbc18;
+  padding: 40px 24px;
+  margin: 24px auto;
+  max-width: 820px; /* wider to accommodate tables */
+  border-radius: 30px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;  /* add this line */
+}
+
+.shuttle-table-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
   .cute-sticker {
     font-size: 2.2em;
     position: absolute;
@@ -485,17 +500,45 @@ const exchangeBus = [
   return campusStops.some(key => distanceKm(lat, lon, stops[key].lat, stops[key].lon) < 1.0); 
 }
   
-  // Find closest stop and bound stop name based on user position
-  function findClosestStop(lat, lon, onCampus) {
+// Given a schedule, return all unique stops actually served today (inbound or outbound)
+function getActiveStops(schedule, direction) {
+  const active = new Set();
+  for (const trip of schedule) {
+    for (const stopKey in trip.stopTimes) {
+      if (
+        (direction === "out" && stopKey.endsWith("_out")) ||
+        (direction === "in" && stopKey.endsWith("_in"))
+      ) {
+        active.add(stopKey);
+      }
+    }
+  }
+  return Array.from(active);
+}
+
+  function findClosestActiveStop(lat, lon, schedule, direction) {
+  // direction: "out" or "in"
+  let candidates = new Set();
+  schedule.forEach(trip => {
+    Object.entries(trip.stopTimes).forEach(([stop, time]) => {
+      if ((direction === "out" && stop.endsWith("_out")) || (direction === "in" && stop.endsWith("_in"))) {
+        candidates.add(stop);
+      }
+    });
+  });
   let minDist = Infinity, closestStop = null;
-  Object.entries(stops).forEach(([key, stop]) => {
-    if(onCampus && !key.endsWith("_out")) return;
-    if(!onCampus && !key.endsWith("_in")) return;
+  candidates.forEach(stopKey => {
+    const stop = stops[stopKey];
+    if (!stop) return;
     const dist = distanceKm(lat, lon, stop.lat, stop.lon);
-    if(dist < minDist) { minDist = dist; closestStop = { key, stop, dist }; }
+    if (dist < minDist) {
+      minDist = dist;
+      closestStop = { key: stopKey, stop, dist };
+    }
   });
   return closestStop;
 }
+
   // Get next bus coming to the stop for given schedule array
   function getNextBus(schedule, stopName) {
     const now = nowMinutes();
@@ -511,10 +554,8 @@ const exchangeBus = [
     }
     return nextBus;
   }
-  // Build full trip table with named stops and columns in order
-  // Build full trip table with named stops and columns in order
-  function buildScheduleTable(schedule, onCampus) {
-    // Ordered stops including Founders and all off-campus stops
+
+   function buildScheduleTable(schedule, color) {
     const orderedStops = [
       "Chapel_out",
       "Founders_out",
@@ -533,57 +574,66 @@ const exchangeBus = [
       "Founders_in",
       "Chapel_in"
     ];
-    // Display stop headers with clearer labels
-    const headers = orderedStops.map(s => stops[s]?.label || s).join('</th><th>');
-    let table = '<table><thead><tr><th>Bus</th><th>' + headers + '</th></tr></thead><tbody>';
-    for (const trip of schedule) {
-      table += '<tr><td>' + trip.bus + '</td>';
-      for (const stopName of orderedStops) {
-        table += '<td>' + (trip.stopTimes[stopName] || '') + '</td>';
+    const tableStyle = `background: ${color}11; border-radius: 10px;`;
+    const headers = orderedStops.map(s=>stops[s]?.label||s).join('</th><th>');
+    let table = `<table style="${tableStyle}"><thead><tr><th>Bus</th><th>${headers}</th></tr></thead><tbody>`;
+    for(const trip of schedule){
+      table += '<tr><td>'+trip.bus+'</td>';
+      for(const stopName of orderedStops){
+        table+= '<td>'+(trip.stopTimes[stopName]||'')+'</td>';
       }
-      table += '</tr>';
+      table +='</tr>';
     }
-    table += '</tbody></table>';
+    table+='</tbody></table>'; 
     return table;
   }
 
-
-  function getTodaySchedule() {
-      const now = new Date();
-      const day = now.getDay();
-      if(day === 0) return sundaySenate;
-      if(day === 6) return saturdaySenate.concat(mallsMoviesShuttle);
-      if(day === 5) return fridayNightSenate.concat(exchangeBus);
-      return exchangeBus; // Mon–Thu
-    }
+  function getTodaySchedules() {
+  const now = new Date();
+  const day = now.getDay();
+  if (day === 0) return [ {title: "Senate Shuttle", color:"#df5dab", schedule:sundaySenate} ];
+  if (day === 6) return [
+    {title: "Senate Shuttle", color:"#df5dab", schedule:saturdaySenate},
+    {title: "Malls & Movies Shuttle", color:"#5fa5df", schedule:mallsMoviesShuttle}
+  ];
+  if (day === 5) return [
+    {title: "Friday Night Senate Shuttle", color:"#df5dab", schedule:fridayNightSenate},
+    {title: "Exchange Bus", color:"#dfa55d", schedule:exchangeBus}
+  ];
+  return [ {title:"Exchange Bus", color:"#dfa55d", schedule:exchangeBus} ];
+}
 
   // Main logic - called with user location lat/lon
   function main(lat, lon) {
-    const nowStr = formatDatetime();
-    document.getElementById('now').textContent = `Today is ${nowStr}`;
-    const onCampus = userIsOnCampus(lat, lon);
-    const closest = findClosestStop(lat, lon, onCampus);
+  const nowStr = formatDatetime();
+  document.getElementById('now').innerHTML = `<span style="color:var(--label-blue);font-weight:bold;">Today is ${nowStr}</span>`;
 
-    document.getElementById('status').innerHTML = `Location detected. You appear to be <strong>${onCampus ? "on campus" : "off campus"}</strong>. Closest stop is <strong>${closest.stop.label || closest.key}</strong>, ~${closest.dist.toFixed(2)} km away (~${walkingMinutes(closest.dist)} min walk).`;
+  const onCampus = userIsOnCampus(lat, lon);
+  const userDirection = onCampus ? "out" : "in";
+  const todaySchedules = getTodaySchedules();
 
-    // We'll just show sundaySenate for demo; expand to all days logic
-    const scheduleToday = getTodaySchedule();
-
-    // For on campus user, find next outbound trip time at Chapel_out or Alumnae_out, else inbound for off campus
-    let stopNameForNextBus = closest.key;
-    const nextBus = getNextBus(scheduleToday, stopNameForNextBus);
-
-    let resultHtml;
-    if (nextBus) {
-      resultHtml = `<div><span class="label">Next bus:</span> Bus ${nextBus.bus} at <span class="label">${nextBus.time}</span> (Stop: <span class="label">${nextBus.stopName}</span>)</div>`;
-    } else {
-      resultHtml = `<div>No more buses today for stop <span class="label">${stopNameForNextBus}</span>.</div>`;
+  let html = "";
+  todaySchedules.forEach(entry => {
+    const closest = findClosestActiveStop(lat, lon, entry.schedule, userDirection);
+    const nextBus = closest ? getNextBus(entry.schedule, closest.key) : null;
+    let resultHtml = "";
+    if (closest) {
+      if(nextBus) {
+        resultHtml = `<div><span class="label">Next bus:</span> Bus ${nextBus.bus} at <span class="label">${nextBus.time}</span> (Stop: <b>${closest.stop.label}</b>)</div>`;
+      } else {
+        resultHtml = `<div>No more buses today for stop <b>${closest.stop.label}</b>.</div>`;
+      }
+      resultHtml += `<div class="walk-time" style="color:${entry.color};">Estimated walking time: ${walkingMinutes(closest.dist)} minutes (~${closest.dist.toFixed(2)} km)</div>`;
     }
-    resultHtml += `<div class="walk-time">Estimated walking time: ${walkingMinutes(closest.dist)} minutes (~${closest.dist.toFixed(2)} km)</div>`;
-    document.getElementById('result').innerHTML = resultHtml;
+    html += `<div class="shuttle-table-wrap">
+      <h2 style="color:${entry.color};margin:12px 0 4px 0">${entry.title}</h2>
+      ${resultHtml}
+      ${buildScheduleTable(entry.schedule, entry.color)}
+    </div>`;
+  });
 
-    document.getElementById('schedule').innerHTML = buildScheduleTable(scheduleToday, onCampus);
-  }
+  document.getElementById('schedule').innerHTML = html;
+}
 
   // On page load, get geolocation and run main
   if (navigator.geolocation) {
