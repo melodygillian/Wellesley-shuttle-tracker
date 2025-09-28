@@ -35,46 +35,35 @@
   align-items: center;  /* add this line */
 }
 
-.shuttle-table-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-table {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Ensure the shuttle-table-wrap uses full width */
+/* General container */
 .shuttle-table-wrap {
   width: 100%;
   margin-bottom: 30px;
 }
 
-/* Default: horizontal scroll for tables */
+/* Scroll container: allows horizontal scroll on all devices */
 .shuttle-table-wrap > div {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
   width: 100%;
 }
 
-/* Normal table styles */
+/* Base table styles */
 table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 500px; /* trigger scroll on narrow screens */
+  min-width: 400px; /* Lowered min width to help fit more */
   background: var(--light-pink);
   margin: 0 auto;
-  font-size: 0.98em;
+  font-size: 0.9em; /* smaller font */
   border-radius: 8px;
   overflow: hidden;
-  white-space: nowrap;
 }
 
 th, td {
   border: 1px solid var(--deep-pink);
-  padding: 7px 12px;
+  padding: 4px 8px; /* less padding */
   white-space: nowrap;
   text-align: center;
 }
@@ -85,56 +74,9 @@ th {
   font-weight: 600;
 }
 
-/* On small screens (phones): switch table to vertical stacked */
-@media screen and (max-width: 480px) {
-  .shuttle-table-wrap > div {
-    overflow-x: visible; /* no horizontal scroll */
-  }
-  table, thead, tbody, th, td, tr {
-    display: block;
-    width: 100%;
-  }
-
-  thead tr {
-    display: none; /* hide table headers on small screens */
-  }
-
-  tbody tr {
-    border: 2px solid var(--deep-pink);
-    margin-bottom: 12px;
-    border-radius: 12px;
-    padding: 10px;
-  }
-
-  tbody tr td {
-    border: none;
-    border-bottom: 1px solid var(--deep-pink);
-    position: relative;
-    padding-left: 50%;
-    text-align: left;
-    white-space: normal;
-  }
-
-  tbody tr td:last-child {
-    border-bottom: 0;
-  }
-
-  /* Add labels inside cells to simulate headers */
-  tbody tr td::before {
-    position: absolute;
-    top: 50%;
-    left: 14px;
-    transform: translateY(-50%);
-    font-weight: 700;
-    color: var(--burgundy);
-    white-space: nowrap;
-    font-size: 0.9em;
-  }
-
-  /* Use data-label attribute for cell labels */
-  tbody tr td[data-label]:before {
-    content: attr(data-label);
-  }
+/* Optional: reduce line height for compactness */
+td {
+  line-height: 1.1;
 }
 
   .cute-sticker {
@@ -646,44 +588,38 @@ function getActiveStops(schedule, direction) {
     return nextBus;
   }
 
-   function buildScheduleTable(schedule, color) {
-    const stopSet = new Set();
-    schedule.forEach(trip => {
-      Object.keys(trip.stopTimes).forEach(stop => stopSet.add(stop));
-    });
-    const orderedStops = Array.from(stopSet);
-  
-    const headers = orderedStops.map(s => stops[s]?.label || s);
-  
-    const tableWrapperStyle = `
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      width: 100%;
-    `;
-    
-    const tableStyle = `
-      background: ${color}11;
-      border-radius: 10px;
-      min-width: 500px;
-    `;
-  
-    let html = `<div style="${tableWrapperStyle}"><table style="${tableStyle}"><thead><tr><th>Bus</th>`;
-    html += headers.map(h => `<th>${h}</th>`).join('');
-    html += `</tr></thead><tbody>`;
-  
-    for (const trip of schedule) {
-      html += `<tr><td data-label="Bus">${trip.bus}</td>`;
-      orderedStops.forEach((stop, idx) => {
-        const label = headers[idx];
-        const time = trip.stopTimes[stop] || '';
-        html += `<td data-label="${label}">${time}</td>`;
-      });
-      html += `</tr>`;
+function buildScheduleTable(schedule, color) {
+  const stopSet = new Set();
+  schedule.forEach(trip => {
+    Object.keys(trip.stopTimes).forEach(stop => stopSet.add(stop));
+  });
+  const orderedStops = Array.from(stopSet);
+
+  const headers = orderedStops.map(s => stops[s]?.label || s).join('</th><th>');
+
+  const tableWrapperStyle = `
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  `;
+  // reduce min-width here too to fit phone better
+  const tableStyle = `
+    background: ${color}11;
+    border-radius: 10px;
+    min-width: 400px;
+  `;
+
+  let html = `<div style="${tableWrapperStyle}"><table style="${tableStyle}"><thead><tr><th>Bus</th><th>${headers}</th></tr></thead><tbody>`;
+  for (const trip of schedule) {
+    html += '<tr><td>' + trip.bus + '</td>';
+    for (const stopName of orderedStops) {
+      html += '<td>' + (trip.stopTimes[stopName] || '') + '</td>';
     }
-  
-    html += `</tbody></table></div>`;
-    return html;
+    html += '</tr>';
   }
+  html += '</tbody></table></div>';
+  return html;
+}
 
   function getTodaySchedules() {
   const now = new Date();
