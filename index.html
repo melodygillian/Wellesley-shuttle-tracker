@@ -102,23 +102,25 @@
 <script>
   // Shuttle stops with lat/lon, tagged as campus or off campus
   const stops = {
-    "Chapel_out": {lat: 42.29160, lon: -71.30411, type: "campus", label:"Chapel (Outbound)"},
-    "Alumnae_out": {lat: 42.29467, lon: -71.30979, type: "campus", label:"Alumnae (Outbound)"},
-    "Founders_out": {42.29234, lon: -71.30453, type: "campus", label: "Founder (Outbound)"},
-    "Harvard Sq.": {lat: 42.37485, lon: -71.11795, type: "off"},
-    "77 Mass Ave.": {lat: 42.35942, lon: -71.09311, type: "off"},
-    "350 Mass Ave.": {lat: 42.42720, lon: -71.19946, type: "off"},
-    "Vassar St., Bldg 34.": {lat: 42.36128, lon: -71.09199, type: "off"},
-    "Kendall Sq. T Stop": {lat: 42.36271, lon: -71.08552, type: "off"},
-    "Marlboro Market": {lat: 42.35587, lon: -71.08806, type: "off"},
-    "Macy's": {lat: 42.30106, lon: -71.38389, type: "off"},
-    "AMC Theater": {lat: 42.30368, lon: -71.39033, type: "off"},
-    "Barnes & Noble": {lat: 42.30795, lon: -71.37253, type: "off"},
-    "Target": {lat: 42.31658, lon: -71.40137, type: "off"},
-    "Alumnae_in": {lat: 42.29467, lon: -71.30979, type: "campus", label:"Alumnae (Inbound)"},
-    "Chapel_in": {lat: 42.29160, lon: -71.30411, type: "campus", label:"Chapel (Inbound)"},
-    "Founders_out": {42.29234, lon: -71.30453, type: "campus", label: "Founder (Inbound)"}
-  };
+  "Chapel_out": {lat: 42.29160, lon: -71.30411, type: "campus", label:"Chapel (Outbound)"},
+  "Alumnae_out": {lat: 42.29467, lon: -71.30979, type: "campus", label:"Alumnae (Outbound)"},
+  "Founders_out": {lat: 42.29234, lon: -71.30453, type: "campus", label: "Founders (Outbound)"},
+
+  "Harvard Sq.": {lat: 42.37485, lon: -71.11795, type: "off", label: "Harvard Sq."},
+  "77 Mass Ave.": {lat: 42.35942, lon: -71.09311, type: "off", label: "77 Mass Ave."},
+  "350 Mass Ave.": {lat: 42.42720, lon: -71.19946, type: "off", label: "350 Mass Ave."},
+  "Vassar St., Bldg 34": {lat: 42.36128, lon: -71.09199, type: "off", label: "Vassar St., Bldg 34"},
+  "Kendall Sq. T Stop": {lat: 42.36271, lon: -71.08552, type: "off", label: "Kendall Sq. T Stop"},
+  "Marlboro Market": {lat: 42.35587, lon: -71.08806, type: "off", label: "Marlboro Market"},
+  "Macy's": {lat: 42.30106, lon: -71.38389, type: "off", label: "Macy's"},
+  "AMC Theater": {lat: 42.30368, lon: -71.39033, type: "off", label: "AMC Theater"},
+  "Barnes & Noble": {lat: 42.30795, lon: -71.37253, type: "off", label: "Barnes & Noble"},
+  "Target": {lat: 42.31658, lon: -71.40137, type: "off", label: "Target"},
+
+  "Alumnae_in": {lat: 42.29467, lon: -71.30979, type: "campus", label:"Alumnae (Inbound)"},
+  "Chapel_in": {lat: 42.29160, lon: -71.30411, type: "campus", label:"Chapel (Inbound)"},
+  "Founders_in": {lat: 42.29234, lon: -71.30453, type: "campus", label: "Founders (Inbound)"}
+};
 
   const campusStops = ["Chapel_out","Founders_out","Alumnae_out"];
   const campusStopsIn = ["Chapel_in","Founders_in","Alumnae_in"];
@@ -371,81 +373,81 @@ const exchangeBus = [
   {bus: "A", stopTimes: {
     "Chapel_out":"9:00 am", "Alumnae_out":"9:05 am",
     "350 Mass Ave.":"9:50 am", "Vassar St., Bldg 34":"9:55 am",
-    "Kendall Sq. T Stop":"10:00 am", "77 Mass Ave.":"10:05 am", "45 Mass Ave. Marlboro Market":"10:10 am",
+    "Kendall Sq. T Stop":"10:00 am", "77 Mass Ave.":"10:05 am", "Marlboro Market":"10:10 am",
     "Alumnae_in":"11:00 am", "Chapel_in":"11:05 am"
   }},
   {bus: "B", stopTimes: {
     "Chapel_out":"10:30 am", "Alumnae_out":"10:35 am",
     "350 Mass Ave.":"11:20 am", "Vassar St., Bldg 34":"11:25 am",
-    "Kendall Sq. T Stop":"11:30 am", "77 Mass Ave.":"11:35 am", "45 Mass Ave. Marlboro Market":"11:40 am",
+    "Kendall Sq. T Stop":"11:30 am", "77 Mass Ave.":"11:35 am", "Marlboro Market":"11:40 am",
     "Alumnae_in":"12:30 pm", "Chapel_in":"12:35 pm"
   }},
   {bus: "A", stopTimes: {
     "Chapel_out":"11:30 am", "Alumnae_out":"11:35 am",
     "350 Mass Ave.":"12:20 pm", "Vassar St., Bldg 34":"12:25 pm",
-    "Kendall Sq. T Stop":"12:30 pm", "77 Mass Ave.":"12:35 pm", "45 Mass Ave. Marlboro Market":"12:40 pm",
+    "Kendall Sq. T Stop":"12:30 pm", "77 Mass Ave.":"12:35 pm", "Marlboro Market":"12:40 pm",
     "Alumnae_in":"1:35 pm", "Chapel_in":"1:40 pm"
   }},
   {bus: "C", stopTimes: {
     "Chapel_out":"12:40 pm", "Alumnae_out":"12:45 pm",
     "350 Mass Ave.":"1:20 pm", "Vassar St., Bldg 34":"1:25 pm",
-    "Kendall Sq. T Stop":"1:30 pm", "77 Mass Ave.":"1:35 pm", "45 Mass Ave. Marlboro Market":"1:40 pm",
+    "Kendall Sq. T Stop":"1:30 pm", "77 Mass Ave.":"1:35 pm", "Marlboro Market":"1:40 pm",
     "Alumnae_in":"2:30 pm", "Chapel_in":"2:35 pm"
   }},
   {bus: "B", stopTimes: {
     "Chapel_out":"1:30 pm", "Alumnae_out":"1:35 pm",
     "350 Mass Ave.":"2:20 pm", "Vassar St., Bldg 34":"2:25 pm",
-    "Kendall Sq. T Stop":"2:30 pm", "77 Mass Ave.":"2:35 pm", "45 Mass Ave. Marlboro Market":"2:40 pm",
+    "Kendall Sq. T Stop":"2:30 pm", "77 Mass Ave.":"2:35 pm", "Marlboro Market":"2:40 pm",
     "Alumnae_in":"3:30 pm", "Chapel_in":"3:35 pm"
   }},
   {bus: "A", stopTimes: {
     "Chapel_out":"2:30 pm", "Alumnae_out":"2:35 pm",
     "350 Mass Ave.":"3:20 pm", "Vassar St., Bldg 34":"3:25 pm",
-    "Kendall Sq. T Stop":"3:30 pm", "77 Mass Ave.":"3:35 pm", "45 Mass Ave. Marlboro Market":"3:40 pm",
+    "Kendall Sq. T Stop":"3:30 pm", "77 Mass Ave.":"3:35 pm", "Marlboro Market":"3:40 pm",
     "Alumnae_in":"4:30 pm", "Chapel_in":"4:35 pm"
   }},
   {bus: "C", stopTimes: {
     "Chapel_out":"3:30 pm", "Alumnae_out":"3:35 pm",
     "350 Mass Ave.":"4:20 pm", "Vassar St., Bldg 34":"4:25 pm",
-    "Kendall Sq. T Stop":"4:30 pm", "77 Mass Ave.":"4:35 pm", "45 Mass Ave. Marlboro Market":"4:40 pm",
+    "Kendall Sq. T Stop":"4:30 pm", "77 Mass Ave.":"4:35 pm", "Marlboro Market":"4:40 pm",
     "Alumnae_in":"5:30 pm", "Chapel_in":"5:35 pm"
   }},
   {bus: "B", stopTimes: {
     "Chapel_out":"4:30 pm", "Alumnae_out":"4:35 pm",
     "350 Mass Ave.":"5:20 pm", "Vassar St., Bldg 34":"5:25 pm",
-    "Kendall Sq. T Stop":"5:30 pm", "77 Mass Ave.":"5:35 pm", "45 Mass Ave. Marlboro Market":"5:40 pm",
+    "Kendall Sq. T Stop":"5:30 pm", "77 Mass Ave.":"5:35 pm", "Marlboro Market":"5:40 pm",
     "Alumnae_in":"6:30 pm", "Chapel_in":"6:35 pm"
   }},
   // * Last Exchange Bus from campus on Fridays
   {bus: "A", stopTimes: {
     "Chapel_out":"5:30 pm", "Alumnae_out":"5:35 pm",
     "350 Mass Ave.":"6:20 pm", "Vassar St., Bldg 34":"6:25 pm",
-    "Kendall Sq. T Stop":"6:30 pm", "77 Mass Ave.":"6:35 pm", "45 Mass Ave. Marlboro Market":"6:40 pm",
+    "Kendall Sq. T Stop":"6:30 pm", "77 Mass Ave.":"6:35 pm", "Marlboro Market":"6:40 pm",
     "Alumnae_in":"7:30 pm", "Chapel_in":"7:35 pm"
   }},
   {bus: "C", stopTimes: {
     "Chapel_out":"6:00 pm", "Alumnae_out":"6:05 pm",
     "350 Mass Ave.":"6:50 pm", "Vassar St., Bldg 34":"6:55 pm",
-    "Kendall Sq. T Stop":"7:00 pm", "77 Mass Ave.":"7:05 pm", "45 Mass Ave. Marlboro Market":"7:10 pm",
+    "Kendall Sq. T Stop":"7:00 pm", "77 Mass Ave.":"7:05 pm", "Marlboro Market":"7:10 pm",
     "Alumnae_in":"8:00 pm", "Chapel_in":"8:05 pm"
   }},
   {bus: "B", stopTimes: {
     "Chapel_out":"7:00 pm", "Alumnae_out":"7:05 pm",
     "350 Mass Ave.":"7:50 pm", "Vassar St., Bldg 34":"7:55 pm",
-    "Kendall Sq. T Stop":"8:00 pm", "77 Mass Ave.":"8:05 pm", "45 Mass Ave. Marlboro Market":"8:10 pm",
+    "Kendall Sq. T Stop":"8:00 pm", "77 Mass Ave.":"8:05 pm", "Marlboro Market":"8:10 pm",
     "Alumnae_in":"9:00 pm", "Chapel_in":"9:05 pm"
   }},
   {bus: "A", stopTimes: {
     "Chapel_out":"8:00 pm", "Alumnae_out":"8:05 pm",
     "350 Mass Ave.":"8:50 pm", "Vassar St., Bldg 34":"8:55 pm",
-    "Kendall Sq. T Stop":"9:00 pm", "77 Mass Ave.":"9:05 pm", "45 Mass Ave. Marlboro Market":"9:10 pm",
+    "Kendall Sq. T Stop":"9:00 pm", "77 Mass Ave.":"9:05 pm", "Marlboro Market":"9:10 pm",
     "Alumnae_in":"10:00 pm", "Chapel_in":"10:05 pm"
   }},
   // ** Last bus from campus
   {bus: "C", stopTimes: {
     "Chapel_out":"9:00 pm", "Alumnae_out":"9:05 pm",
     "350 Mass Ave.":"9:50 pm", "Vassar St., Bldg 34":"9:55 pm",
-    "Kendall Sq. T Stop":"10:00 pm", "77 Mass Ave.":"10:05 pm", "45 Mass Ave. Marlboro Market":"10:10 pm",
+    "Kendall Sq. T Stop":"10:00 pm", "77 Mass Ave.":"10:05 pm", "Marlboro Market":"10:10 pm",
     "Alumnae_in":"11:00 pm", "Chapel_in":"11:05 pm"
   }},
 ];
@@ -512,28 +514,39 @@ const exchangeBus = [
   // Build full trip table with named stops and columns in order
   function buildScheduleTable(schedule, onCampus) {
     // Ordered stops fully showing outbound and inbound at start and end
-    const orderedStops = [
-      "Chapel_out",
-      "Alumnae_out",
-      "Harvard Sq.",
-      "77 Mass Ave.",
-      "Marlboro Market",
-      "Alumnae_in",
-      "Chapel_in"
-    ];
-    // Display stop headers with clearer labels
-    const headers = orderedStops.map(s=>stops[s]?.label || s).join('</th><th>');
-    let table = '<table><thead><tr><th>Bus</th><th>' + headers + '</th></tr></thead><tbody>';
-    for(const trip of schedule) {
-      table += '<tr><td>' + trip.bus + '</td>';
-      for(const stopName of orderedStops) {
-        table += '<td>' + (trip.stopTimes[stopName] || '') + '</td>';
-      }
-      table += '</tr>';
+    function buildScheduleTable(schedule, onCampus) {
+  // Ordered stops including Founders
+  const orderedStops = [
+    "Chapel_out",
+    "Founders_out",
+    "Alumnae_out",
+    "Harvard Sq.",
+    "77 Mass Ave.",
+    "350 Mass Ave.",
+    "Vassar St., Bldg 34",
+    "Kendall Sq. T Stop",
+    "Marlboro Market",
+    "Macy's",
+    "AMC Theater",
+    "Barnes & Noble",
+    "Target",
+    "Alumnae_in",
+    "Founders_in",
+    "Chapel_in"
+  ];
+  // Display stop headers with clearer labels
+  const headers = orderedStops.map(s=>stops[s]?.label || s).join('</th><th>');
+  let table = '<table><thead><tr><th>Bus</th><th>' + headers + '</th></tr></thead><tbody>';
+  for(const trip of schedule) {
+    table += '<tr><td>' + trip.bus + '</td>';
+    for(const stopName of orderedStops) {
+      table += '<td>' + (trip.stopTimes[stopName] || '') + '</td>';
     }
-    table += '</tbody></table>';
-    return table;
+    table += '</tr>';
   }
+  table += '</tbody></table>';
+  return table;
+}
 
   function getTodaySchedule() {
       const now = new Date();
