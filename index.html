@@ -46,24 +46,25 @@ table {
   margin-right: auto;
 }
 
-  /* Ensure container handles horizontal scrolling */
+/* Ensure the shuttle-table-wrap uses full width */
 .shuttle-table-wrap {
+  width: 100%;
   margin-bottom: 30px;
+}
+
+/* Table container handles overflow */
+.shuttle-table-wrap > div {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
   width: 100%;
 }
 
-/* Scroll wrapper for tables */
-.shuttle-table-wrap > div {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* smooth scrolling for iOS */
-  border-radius: 10px;
-  margin-top: 6px;
-}
-
+/* Table styling */
 table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 400px; /* minimum width to avoid squishing */
+  min-width: 500px; /* minimum width for scroll trigger */
   background: var(--light-pink);
   margin: 0 auto;
   font-size: 0.98em;
@@ -74,7 +75,7 @@ table {
 th, td {
   border: 1px solid var(--deep-pink);
   padding: 7px 12px;
-  white-space: nowrap; /* keep content from wrapping */
+  white-space: nowrap;
 }
 
 th {
@@ -594,27 +595,35 @@ function getActiveStops(schedule, direction) {
   }
 
    function buildScheduleTable(schedule, color) {
-    // Dynamically gather all stops that appear in this schedule’s trips
     const stopSet = new Set();
     schedule.forEach(trip => {
       Object.keys(trip.stopTimes).forEach(stop => stopSet.add(stop));
     });
     const orderedStops = Array.from(stopSet);
   
-    // Build header with labels
     const headers = orderedStops.map(s => stops[s]?.label || s).join('</th><th>');
-    
-    const tableStyle = `background: ${color}11; border-radius: 10px; overflow-x: auto;`;
-    let table = `<div style="overflow-x:auto;"><table style="${tableStyle}"><thead><tr><th>Bus</th><th>${headers}</th></tr></thead><tbody>`;
+  
+    const tableWrapperStyle = `
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* for smooth scrolling on iOS */
+      width: 100%;
+    `;
+    const tableStyle = `
+      background: ${color}11;
+      border-radius: 10px;
+      min-width: 500px; /* ensures minimum width trigger scroll */
+    `;
+  
+    let html = `<div style="${tableWrapperStyle}"><table style="${tableStyle}"><thead><tr><th>Bus</th><th>${headers}</th></tr></thead><tbody>`;
     for (const trip of schedule) {
-      table += '<tr><td>' + trip.bus + '</td>';
+      html += '<tr><td>' + trip.bus + '</td>';
       for (const stopName of orderedStops) {
-        table += '<td>' + (trip.stopTimes[stopName] || '') + '</td>';
+        html += '<td>' + (trip.stopTimes[stopName] || '') + '</td>';
       }
-      table += '</tr>';
+      html += '</tr>';
     }
-    table += '</tbody></table></div>';
-    return table;
+    html += '</tbody></table></div>';
+    return html;
   }
 
   function getTodaySchedules() {
