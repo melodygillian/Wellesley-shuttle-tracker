@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="icon" href="URL_TO_YOUR_ICON">
+<!-- favicon -->
+<link rel="icon" href="https://static.vecteezy.com/system/resources/previews/053/416/587/non_2x/a-pink-bus-icon-on-a-white-background-free-vector.jpg">
 <title>Wellesley Shuttle Finder</title>
 <style>
 :root {
@@ -16,73 +17,61 @@
   --burgundy: #800020;
   --sticker-bg: #ffe3ef;
 }
-
 body {
   background: linear-gradient(140deg, var(--light-pink) 60%, var(--champagne) 100%);
   min-height: 100vh;
   color: var(--deep-pink);
   font-family: 'Quicksand', 'Avenir', Arial, sans-serif;
 }
-
 .container {
   background: var(--pearl-gray);
   box-shadow: 0 6px 24px #fd9cbc18;
   padding: 40px 24px;
   margin: 24px auto;
-  max-width: 820px; /* wider container for larger screens */
+  max-width: 820px;
   border-radius: 30px;
   position: relative;
-
-  /* Scroll fix for iPhone */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-
 .shuttle-table-wrap {
   width: 100%;
   margin-bottom: 30px;
 }
-
 .shuttle-table-wrap > div {
-  overflow-x: auto; /* horizontal scroll */
-  -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: 10px;
   width: 100%;
 }
-
 table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 600px;  /* ensure enough width; fits columns */
+  min-width: 600px;
   background: var(--light-pink);
   margin: 0 auto;
-  font-size: 0.9em;  /* smaller font for better fit */
+  font-size: 0.9em;
   border-radius: 8px;
   overflow: hidden;
-  white-space: nowrap; /* prevent wrapping */
+  white-space: nowrap;
 }
-
 th, td {
   border: 1px solid var(--deep-pink);
-  padding: 4px 8px; /* smaller padding for tight layout */
+  padding: 4px 8px;
   white-space: nowrap;
   text-align: center;
 }
-
 th {
   background: var(--cute-pink);
   color: #fff;
   font-weight: 600;
 }
-
-/* Headings and other text styling */
 h1 {
   text-align: center;
   color: var(--burgundy);
   font-size: 2.2em;
   margin-bottom: 12px;
 }
-
 #now {
   color: var(--label-blue);
   background: var(--light-pink);
@@ -95,11 +84,9 @@ h1 {
   max-width: 90%;
   box-shadow: 0 2px 6px #ef87b518;
 }
-
 .label {
   color: var(--burgundy);
 }
-
 .result {
   background: var(--champagne);
   border-radius: 16px;
@@ -111,14 +98,11 @@ h1 {
   text-align: center;
   font-size: 1.13em;
 }
-
 .walk-time {
   font-size: 0.97em;
   color: var(--deep-pink);
 }
-
-  /* Add more styles for hover, footer, etc. */
-</style>
+/* End of main styles */
 </style>
 </head>
 <body>
@@ -130,244 +114,302 @@ h1 {
   <div id="schedule"></div>
 </div>
 <footer>
-  Wellesley Shuttle schedules in pink by Melody L • Anonymous & privacy-focused
+  Wellesley Shuttle schedules in pink by Melody L • Anonymous &amp; privacy-focused
 </footer>
 <script>
-  // Shuttle stops with lat/lon, tagged as campus or off campus
-  const stops = {
-  "Chapel_out": {lat: 42.29160, lon: -71.30411, type: "campus", label:"Chapel (Outbound)"},
-  "Alumnae_out": {lat: 42.29467, lon: -71.30979, type: "campus", label:"Alumnae (Outbound)"},
-  "Founders_out": {lat: 42.29234, lon: -71.30453, type: "campus", label: "Founders (Outbound)"},
-
-  "Harvard Sq.": {lat: 42.37485, lon: -71.11795, type: "off", label: "Harvard Sq."},
-  "77 Mass Ave.": {lat: 42.35942, lon: -71.09311, type: "off", label: "77 Mass Ave."},
-  "350 Mass Ave.": {lat: 42.42720, lon: -71.19946, type: "off", label: "350 Mass Ave."},
+/**
+ * =============== SHUTTLE APP LOGIC ===============
+ * All main configuration, schedule, and map logic is below.
+ * All logic is now thoroughly documented for learning!
+ */
+// Shuttle stops: lat/lon and description
+const stops = {
+  "Chapel_out":      {lat: 42.29160, lon: -71.30411, type: "campus", label:"Chapel (Outbound)"},
+  "Alumnae_out":     {lat: 42.29467, lon: -71.30979, type: "campus", label:"Alumnae (Outbound)"},
+  "Founders_out":    {lat: 42.29234, lon: -71.30453, type: "campus", label: "Founders (Outbound)"},
+  "Harvard Sq.":     {lat: 42.37485, lon: -71.11795, type: "off", label: "Harvard Sq."},
+  "77 Mass Ave.":    {lat: 42.35942, lon: -71.09311, type: "off", label: "77 Mass Ave."},
+  "350 Mass Ave.":   {lat: 42.42720, lon: -71.19946, type: "off", label: "350 Mass Ave."},
   "Vassar St., Bldg 34": {lat: 42.36128, lon: -71.09199, type: "off", label: "Vassar St., Bldg 34"},
-  "Kendall Sq. T Stop": {lat: 42.36271, lon: -71.08552, type: "off", label: "Kendall Sq. T Stop"},
+  "Kendall Sq. T Stop":  {lat: 42.36271, lon: -71.08552, type: "off", label: "Kendall Sq. T Stop"},
   "Marlboro Market": {lat: 42.35587, lon: -71.08806, type: "off", label: "Marlboro Market"},
-  "Macy's": {lat: 42.30106, lon: -71.38389, type: "off", label: "Macy's"},
-  "AMC Theater": {lat: 42.30368, lon: -71.39033, type: "off", label: "AMC Theater"},
-  "Barnes & Noble": {lat: 42.30795, lon: -71.37253, type: "off", label: "Barnes & Noble"},
-  "Target": {lat: 42.31658, lon: -71.40137, type: "off", label: "Target"},
-
-  "Alumnae_in": {lat: 42.29467, lon: -71.30979, type: "campus", label:"Alumnae (Inbound)"},
-  "Chapel_in": {lat: 42.29160, lon: -71.30411, type: "campus", label:"Chapel (Inbound)"},
-  "Founders_in": {lat: 42.29234, lon: -71.30453, type: "campus", label: "Founders (Inbound)"}
+  "Macy's":          {lat: 42.30106, lon: -71.38389, type: "off", label: "Macy's"},
+  "AMC Theater":     {lat: 42.30368, lon: -71.39033, type: "off", label: "AMC Theater"},
+  "Barnes & Noble":  {lat: 42.30795, lon: -71.37253, type: "off", label: "Barnes & Noble"},
+  "Target":          {lat: 42.31658, lon: -71.40137, type: "off", label: "Target"},
+  "Alumnae_in":      {lat: 42.29467, lon: -71.30979, type: "campus", label:"Alumnae (Inbound)"},
+  "Chapel_in":       {lat: 42.29160, lon: -71.30411, type: "campus", label:"Chapel (Inbound)"},
+  "Founders_in":     {lat: 42.29234, lon: -71.30453, type: "campus", label: "Founders (Inbound)"}
 };
 
-  const campusStops = ["Chapel_out","Founders_out","Alumnae_out"];
-  const campusStopsIn = ["Chapel_in","Founders_in","Alumnae_in"];
+/**
+ * ===== CAMPUS POLYGON DEFINITION =====
+ * Used to determine if user is on campus.
+ * This polygon covers the main part of Wellesley College (approx outline).
+ * The order of points is important (should form a closed polygon).
+ */
+const campusPolygon = [
+  [42.295, -71.312],   // northwest point near Alumnae
+  [42.296, -71.302],   // northeast point (behind Science Center)
+  [42.291, -71.301],   // southeast (bottom right, near Chapel)
+  [42.290, -71.314],   // southwest (Field House)
+];
 
-  // The shuttle schedules with outbound and inbound stops for Chapel and Alumnae
-  // Times are examples from official schedule truncated for brevity
+// Helper: Point-in-polygon test using ray-casting algorithm
+function pointInPolygon(lat, lon, polygon) {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [lat_i, lon_i] = polygon[i];
+    const [lat_j, lon_j] = polygon[j];
+    const intersect = ((lon_i > lon) !== (lon_j > lon)) &&
+      (lat < (lat_j - lat_i) * (lon - lon_i) / (lon_j - lon_i) + lat_i);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
 
-  const sundaySenate = [
-    {bus: "A", stopTimes: {
-      "Chapel_out":"9:00 am", "Alumnae_out":"9:05 am",
-      "Harvard Sq.":"9:45 am", "77 Mass Ave.":"9:55 am", "Marlboro Market":"10:00 am",
-      "Alumnae_in":"10:30 am", "Chapel_in":"10:35 am"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"11:00 am", "Alumnae_out":"11:05 am",
-      "Harvard Sq.":"11:45 am", "77 Mass Ave.":"11:55 am", "Marlboro Market":"12:00 pm",
-      "Alumnae_in":"12:30 pm", "Chapel_in":"12:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"1:00 pm", "Alumnae_out":"1:05 pm",
-      "Harvard Sq.":"1:45 pm", "77 Mass Ave.":"1:55 pm", "Marlboro Market":"2:00 pm",
-      "Alumnae_in":"2:30 pm", "Chapel_in":"2:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"3:00 pm", "Alumnae_out":"3:05 pm",
-      "Harvard Sq.":"3:45 pm", "77 Mass Ave.":"3:55 pm", "Marlboro Market":"4:00 pm",
-      "Alumnae_in":"4:30 pm", "Chapel_in":"4:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"5:00 pm", "Alumnae_out":"5:05 pm",
-      "Harvard Sq.":"5:45 pm", "77 Mass Ave.":"5:55 pm", "Marlboro Market":"6:00 pm",
-      "Alumnae_in":"6:30 pm", "Chapel_in":"6:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"7:00 pm", "Alumnae_out":"7:05 pm",
-      "Harvard Sq.":"7:45 pm", "77 Mass Ave.":"7:55 pm", "Marlboro Market":"8:00 pm",
-      "Alumnae_in":"8:30 pm", "Chapel_in":"8:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"9:00 pm", "Alumnae_out":"9:05 pm",
-      "Harvard Sq.":"9:45 pm", "77 Mass Ave.":"9:55 pm", "Marlboro Market":"10:00 pm",
-      "Alumnae_in":"10:30 pm", "Chapel_in":"10:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"11:00 pm", "Alumnae_out":"11:05 pm",
-      "Harvard Sq.":"11:45 pm", "77 Mass Ave.":"11:55 pm", "Marlboro Market":"12:00 am",
-      "Alumnae_in":"12:30 am", "Chapel_in":"12:35 am"
-    }},
-  ];
+// Test if user is on Wellesley campus (polygon), or if fails, fallback to 1km from Chapel
+function userIsOnCampus(lat, lon) {
+  if (pointInPolygon(lat, lon, campusPolygon)) return true;
+  const chapel = stops["Chapel_out"];
+  return distanceKm(lat, lon, chapel.lat, chapel.lon) < 1.0;
+}
 
-  // Saturday senate schedules
-  const saturdaySenate = [
-    {bus: "A", stopTimes: {
-      "Chapel_out":"9:00 am", "Alumnae_out":"9:05 am",
-      "Harvard Sq.":"9:45 am", "77 Mass Ave.":"9:55 am", "Marlboro Market":"10:00 am",
-      "Alumnae_in":"10:30 am", "Chapel_in":"10:35 am"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"10:00 am", "Alumnae_out":"10:05 am",
-      "Harvard Sq.":"10:45 am", "77 Mass Ave.":"10:55 am", "Marlboro Market":"11:00 am",
-      "Alumnae_in":"11:30 am", "Chapel_in":"11:35 am"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"11:00 am", "Alumnae_out":"11:05 am",
-      "Harvard Sq.":"11:45 am", "77 Mass Ave.":"11:55 am", "Marlboro Market":"12:00 pm",
-      "Alumnae_in":"12:30 pm", "Chapel_in":"12:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"12:00 pm", "Alumnae_out":"12:05 pm",
-      "Harvard Sq.":"12:45 pm", "77 Mass Ave.":"12:55 pm", "Marlboro Market":"1:00 pm",
-      "Alumnae_in":"1:30 pm", "Chapel_in":"1:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"1:00 pm", "Alumnae_out":"1:05 pm",
-      "Harvard Sq.":"1:45 pm", "77 Mass Ave.":"1:55 pm", "Marlboro Market":"2:00 pm",
-      "Alumnae_in":"2:30 pm", "Chapel_in":"2:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"2:00 pm", "Alumnae_out":"2:05 pm",
-      "Harvard Sq.":"2:45 pm", "77 Mass Ave.":"2:55 pm", "Marlboro Market":"3:00 pm",
-      "Alumnae_in":"3:30 pm", "Chapel_in":"3:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"3:00 pm", "Alumnae_out":"3:05 pm",
-      "Harvard Sq.":"3:45 pm", "77 Mass Ave.":"3:55 pm", "Marlboro Market":"4:00 pm",
-      "Alumnae_in":"4:30 pm", "Chapel_in":"4:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"4:00 pm", "Alumnae_out":"4:05 pm",
-      "Harvard Sq.":"4:45 pm", "77 Mass Ave.":"4:55 pm", "Marlboro Market":"5:00 pm",
-      "Alumnae_in":"5:30 pm", "Chapel_in":"5:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"5:30 pm", "Alumnae_out":"5:35 pm",
-      "Harvard Sq.":"6:15 pm", "77 Mass Ave.":"6:25 pm", "Marlboro Market":"6:30 pm",
-      "Alumnae_in":"7:00 pm", "Chapel_in":"7:05 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"6:00 pm", "Alumnae_out":"6:05 pm",
-      "Harvard Sq.":"6:45 pm", "77 Mass Ave.":"7:00 pm", "Marlboro Market":"7:05 pm",
-      "Alumnae_in":"7:35 pm", "Chapel_in":"7:40 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"6:40 pm", "Alumnae_out":"6:45 pm",
-      "Harvard Sq.":"7:25 pm", "77 Mass Ave.":"7:40 pm", "Marlboro Market":"7:45 pm",
-      "Alumnae_in":"8:15 pm", "Chapel_in":"8:20 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"7:20 pm", "Alumnae_out":"7:25 pm",
-      "Harvard Sq.":"8:05 pm", "77 Mass Ave.":"8:20 pm", "Marlboro Market":"8:25 pm",
-      "Alumnae_in":"8:55 pm", "Chapel_in":"9:00 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"8:00 pm", "Alumnae_out":"8:05 pm",
-      "Harvard Sq.":"8:45 pm", "77 Mass Ave.":"9:00 pm", "Marlboro Market":"9:05 pm",
-      "Alumnae_in":"9:30 pm", "Chapel_in":"9:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"8:40 pm", "Alumnae_out":"8:45 pm",
-      "Harvard Sq.":"9:20 pm", "77 Mass Ave.":"9:35 pm", "Marlboro Market":"9:40 pm",
-      "Alumnae_in":"10:05 pm", "Chapel_in":"10:10 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"9:20 pm", "Alumnae_out":"9:25 pm",
-      "Harvard Sq.":"10:00 pm", "77 Mass Ave.":"10:15 pm", "Marlboro Market":"10:20 pm",
-      "Alumnae_in":"10:45 pm", "Chapel_in":"10:50 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"10:00 pm", "Alumnae_out":"10:05 pm",
-      "Harvard Sq.":"10:40 pm", "77 Mass Ave.":"11:00 pm", "Marlboro Market":"11:05 pm",
-      "Alumnae_in":"11:30 pm", "Chapel_in":"11:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"10:40 pm", "Alumnae_out":"10:45 pm",
-      "Harvard Sq.":"11:20 pm", "77 Mass Ave.":"11:35 pm", "Marlboro Market":"11:40 pm",
-      "Alumnae_in":"12:05 am", "Chapel_in":"12:10 am"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"11:20 pm", "Alumnae_out":"11:25 pm",
-      "Harvard Sq.":"12:00 am", "77 Mass Ave.":"12:15 am", "Marlboro Market":"12:20 am",
-      "Alumnae_in":"12:45 am", "Chapel_in":"12:50 am"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"12:00 am", "Alumnae_out":"12:05 am",
-      "Harvard Sq.":"12:30 am", "77 Mass Ave.":"12:45 am", "Marlboro Market":"12:50 am",
-      "Alumnae_in":"1:15 am", "Chapel_in":"1:20 am"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"12:40 am", "Alumnae_out":"12:45 am",
-      "Harvard Sq.":"1:20 am", "77 Mass Ave.":"1:35 am", "Marlboro Market":"1:40 am",
-      "Alumnae_in":"2:05 am", "Chapel_in":"2:10 am"
-    }},
-  ];
+// Haversine formula for distance in km between two lat/lon points
+function distanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function walkingMinutes(distanceKm) {
+  return Math.round(distanceKm / 5 * 60);
+}
+function timeToMinutes(t) {
+  if (!t) return null;
+  let [time, meridiem] = t.toLowerCase().split(' ');
+  let [h, m] = time.split(':').map(Number);
+  if(meridiem === 'pm' && h !== 12) h += 12;
+  if(meridiem === 'am' && h === 12) h = 0;
+  return h*60 + m;
+}
+function nowMinutes() {
+  let d = new Date();
+  return d.getHours()*60 + d.getMinutes();
+}
+function formatDatetime() {
+  return (new Date()).toLocaleString("en-US", {
+    weekday:"long", year:"numeric", month:"long", day:"numeric",
+    hour:"2-digit", minute:"2-digit", hour12:true
+  });
+}
 
-  // Friday night senate schedules
-  const fridayNightSenate = [
-    {bus: "A", stopTimes: {
-      "Chapel_out":"6:00 pm", "Alumnae_out":"6:05 pm",
-      "Harvard Sq.":"6:45 pm", "77 Mass Ave.":"7:00 pm", "Marlboro Market":"7:05 pm",
-      "Alumnae_in":"7:35 pm", "Chapel_in":"7:40 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"6:40 pm", "Alumnae_out":"6:45 pm",
-      "Harvard Sq.":"7:25 pm", "77 Mass Ave.":"7:40 pm", "Marlboro Market":"7:45 pm",
-      "Alumnae_in":"8:15 pm", "Chapel_in":"8:20 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"7:20 pm", "Alumnae_out":"7:25 pm",
-      "Harvard Sq.":"8:05 pm", "77 Mass Ave.":"8:20 pm", "Marlboro Market":"8:25 pm",
-      "Alumnae_in":"8:55 pm", "Chapel_in":"9:00 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"8:00 pm", "Alumnae_out":"8:05 pm",
-      "Harvard Sq.":"8:45 pm", "77 Mass Ave.":"9:00 pm", "Marlboro Market":"9:05 pm",
-      "Alumnae_in":"9:30 pm", "Chapel_in":"9:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"8:40 pm", "Alumnae_out":"8:45 pm",
-      "Harvard Sq.":"9:20 pm", "77 Mass Ave.":"9:35 pm", "Marlboro Market":"9:40 pm",
-      "Alumnae_in":"10:05 pm", "Chapel_in":"10:10 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"9:20 pm", "Alumnae_out":"9:25 pm",
-      "Harvard Sq.":"10:00 pm", "77 Mass Ave.":"10:15 pm", "Marlboro Market":"10:20 pm",
-      "Alumnae_in":"10:45 pm", "Chapel_in":"10:50 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"10:00 pm", "Alumnae_out":"10:05 pm",
-      "Harvard Sq.":"10:40 pm", "77 Mass Ave.":"11:00 pm", "Marlboro Market":"11:05 pm",
-      "Alumnae_in":"11:30 pm", "Chapel_in":"11:35 pm"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"10:40 pm", "Alumnae_out":"10:45 pm",
-      "Harvard Sq.":"11:20 pm", "77 Mass Ave.":"11:35 pm", "Marlboro Market":"11:40 pm",
-      "Alumnae_in":"12:05 am", "Chapel_in":"12:10 am"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"11:20 pm", "Alumnae_out":"11:25 pm",
-      "Harvard Sq.":"12:00 am", "77 Mass Ave.":"12:15 am", "Marlboro Market":"12:20 am",
-      "Alumnae_in":"12:45 am", "Chapel_in":"12:50 am"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"12:00 am", "Alumnae_out":"12:05 am",
-      "Harvard Sq.":"12:30 am", "77 Mass Ave.":"12:45 am", "Marlboro Market":"12:50 am",
-      "Alumnae_in":"1:15 am", "Chapel_in":"1:20 am"
-    }},
-    {bus: "A", stopTimes: {
-      "Chapel_out":"12:40 am", "Alumnae_out":"12:45 am",
-      "Harvard Sq.":"1:20 am", "77 Mass Ave.":"1:35 am", "Marlboro Market":"1:40 am",
-      "Alumnae_in":"2:05 am", "Chapel_in":"2:10 am"
-    }},
-  ];
-
-  // Saturday malls & movies shuttle
+// ===== ALL SHUTTLE SCHEDULE VARIABLES =====
+const sundaySenate = [
+  {bus: "A", stopTimes: {
+    "Chapel_out":"9:00 am", "Alumnae_out":"9:05 am",
+    "Harvard Sq.":"9:45 am", "77 Mass Ave.":"9:55 am", "Marlboro Market":"10:00 am",
+    "Alumnae_in":"10:30 am", "Chapel_in":"10:35 am"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"11:00 am", "Alumnae_out":"11:05 am",
+    "Harvard Sq.":"11:45 am", "77 Mass Ave.":"11:55 am", "Marlboro Market":"12:00 pm",
+    "Alumnae_in":"12:30 pm", "Chapel_in":"12:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"1:00 pm", "Alumnae_out":"1:05 pm",
+    "Harvard Sq.":"1:45 pm", "77 Mass Ave.":"1:55 pm", "Marlboro Market":"2:00 pm",
+    "Alumnae_in":"2:30 pm", "Chapel_in":"2:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"3:00 pm", "Alumnae_out":"3:05 pm",
+    "Harvard Sq.":"3:45 pm", "77 Mass Ave.":"3:55 pm", "Marlboro Market":"4:00 pm",
+    "Alumnae_in":"4:30 pm", "Chapel_in":"4:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"5:00 pm", "Alumnae_out":"5:05 pm",
+    "Harvard Sq.":"5:45 pm", "77 Mass Ave.":"5:55 pm", "Marlboro Market":"6:00 pm",
+    "Alumnae_in":"6:30 pm", "Chapel_in":"6:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"7:00 pm", "Alumnae_out":"7:05 pm",
+    "Harvard Sq.":"7:45 pm", "77 Mass Ave.":"7:55 pm", "Marlboro Market":"8:00 pm",
+    "Alumnae_in":"8:30 pm", "Chapel_in":"8:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"9:00 pm", "Alumnae_out":"9:05 pm",
+    "Harvard Sq.":"9:45 pm", "77 Mass Ave.":"9:55 pm", "Marlboro Market":"10:00 pm",
+    "Alumnae_in":"10:30 pm", "Chapel_in":"10:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"11:00 pm", "Alumnae_out":"11:05 pm",
+    "Harvard Sq.":"11:45 pm", "77 Mass Ave.":"11:55 pm", "Marlboro Market":"12:00 am",
+    "Alumnae_in":"12:30 am", "Chapel_in":"12:35 am"
+  }},
+];
+// Saturday senate schedules
+const saturdaySenate = [
+  {bus: "A", stopTimes: {
+    "Chapel_out":"9:00 am", "Alumnae_out":"9:05 am",
+    "Harvard Sq.":"9:45 am", "77 Mass Ave.":"9:55 am", "Marlboro Market":"10:00 am",
+    "Alumnae_in":"10:30 am", "Chapel_in":"10:35 am"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"10:00 am", "Alumnae_out":"10:05 am",
+    "Harvard Sq.":"10:45 am", "77 Mass Ave.":"10:55 am", "Marlboro Market":"11:00 am",
+    "Alumnae_in":"11:30 am", "Chapel_in":"11:35 am"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"11:00 am", "Alumnae_out":"11:05 am",
+    "Harvard Sq.":"11:45 am", "77 Mass Ave.":"11:55 am", "Marlboro Market":"12:00 pm",
+    "Alumnae_in":"12:30 pm", "Chapel_in":"12:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"12:00 pm", "Alumnae_out":"12:05 pm",
+    "Harvard Sq.":"12:45 pm", "77 Mass Ave.":"12:55 pm", "Marlboro Market":"1:00 pm",
+    "Alumnae_in":"1:30 pm", "Chapel_in":"1:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"1:00 pm", "Alumnae_out":"1:05 pm",
+    "Harvard Sq.":"1:45 pm", "77 Mass Ave.":"1:55 pm", "Marlboro Market":"2:00 pm",
+    "Alumnae_in":"2:30 pm", "Chapel_in":"2:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"2:00 pm", "Alumnae_out":"2:05 pm",
+    "Harvard Sq.":"2:45 pm", "77 Mass Ave.":"2:55 pm", "Marlboro Market":"3:00 pm",
+    "Alumnae_in":"3:30 pm", "Chapel_in":"3:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"3:00 pm", "Alumnae_out":"3:05 pm",
+    "Harvard Sq.":"3:45 pm", "77 Mass Ave.":"3:55 pm", "Marlboro Market":"4:00 pm",
+    "Alumnae_in":"4:30 pm", "Chapel_in":"4:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"4:00 pm", "Alumnae_out":"4:05 pm",
+    "Harvard Sq.":"4:45 pm", "77 Mass Ave.":"4:55 pm", "Marlboro Market":"5:00 pm",
+    "Alumnae_in":"5:30 pm", "Chapel_in":"5:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"5:30 pm", "Alumnae_out":"5:35 pm",
+    "Harvard Sq.":"6:15 pm", "77 Mass Ave.":"6:25 pm", "Marlboro Market":"6:30 pm",
+    "Alumnae_in":"7:00 pm", "Chapel_in":"7:05 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"6:00 pm", "Alumnae_out":"6:05 pm",
+    "Harvard Sq.":"6:45 pm", "77 Mass Ave.":"7:00 pm", "Marlboro Market":"7:05 pm",
+    "Alumnae_in":"7:35 pm", "Chapel_in":"7:40 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"6:40 pm", "Alumnae_out":"6:45 pm",
+    "Harvard Sq.":"7:25 pm", "77 Mass Ave.":"7:40 pm", "Marlboro Market":"7:45 pm",
+    "Alumnae_in":"8:15 pm", "Chapel_in":"8:20 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"7:20 pm", "Alumnae_out":"7:25 pm",
+    "Harvard Sq.":"8:05 pm", "77 Mass Ave.":"8:20 pm", "Marlboro Market":"8:25 pm",
+    "Alumnae_in":"8:55 pm", "Chapel_in":"9:00 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"8:00 pm", "Alumnae_out":"8:05 pm",
+    "Harvard Sq.":"8:45 pm", "77 Mass Ave.":"9:00 pm", "Marlboro Market":"9:05 pm",
+    "Alumnae_in":"9:30 pm", "Chapel_in":"9:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"8:40 pm", "Alumnae_out":"8:45 pm",
+    "Harvard Sq.":"9:20 pm", "77 Mass Ave.":"9:35 pm", "Marlboro Market":"9:40 pm",
+    "Alumnae_in":"10:05 pm", "Chapel_in":"10:10 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"9:20 pm", "Alumnae_out":"9:25 pm",
+    "Harvard Sq.":"10:00 pm", "77 Mass Ave.":"10:15 pm", "Marlboro Market":"10:20 pm",
+    "Alumnae_in":"10:45 pm", "Chapel_in":"10:50 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"10:00 pm", "Alumnae_out":"10:05 pm",
+    "Harvard Sq.":"10:40 pm", "77 Mass Ave.":"11:00 pm", "Marlboro Market":"11:05 pm",
+    "Alumnae_in":"11:30 pm", "Chapel_in":"11:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"10:40 pm", "Alumnae_out":"10:45 pm",
+    "Harvard Sq.":"11:20 pm", "77 Mass Ave.":"11:35 pm", "Marlboro Market":"11:40 pm",
+    "Alumnae_in":"12:05 am", "Chapel_in":"12:10 am"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"11:20 pm", "Alumnae_out":"11:25 pm",
+    "Harvard Sq.":"12:00 am", "77 Mass Ave.":"12:15 am", "Marlboro Market":"12:20 am",
+    "Alumnae_in":"12:45 am", "Chapel_in":"12:50 am"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"12:00 am", "Alumnae_out":"12:05 am",
+    "Harvard Sq.":"12:30 am", "77 Mass Ave.":"12:45 am", "Marlboro Market":"12:50 am",
+    "Alumnae_in":"1:15 am", "Chapel_in":"1:20 am"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"12:40 am", "Alumnae_out":"12:45 am",
+    "Harvard Sq.":"1:20 am", "77 Mass Ave.":"1:35 am", "Marlboro Market":"1:40 am",
+    "Alumnae_in":"2:05 am", "Chapel_in":"2:10 am"
+  }},
+];
+// Friday night senate schedules
+const fridayNightSenate = [
+  {bus: "A", stopTimes: {
+    "Chapel_out":"6:00 pm", "Alumnae_out":"6:05 pm",
+    "Harvard Sq.":"6:45 pm", "77 Mass Ave.":"7:00 pm", "Marlboro Market":"7:05 pm",
+    "Alumnae_in":"7:35 pm", "Chapel_in":"7:40 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"6:40 pm", "Alumnae_out":"6:45 pm",
+    "Harvard Sq.":"7:25 pm", "77 Mass Ave.":"7:40 pm", "Marlboro Market":"7:45 pm",
+    "Alumnae_in":"8:15 pm", "Chapel_in":"8:20 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"7:20 pm", "Alumnae_out":"7:25 pm",
+    "Harvard Sq.":"8:05 pm", "77 Mass Ave.":"8:20 pm", "Marlboro Market":"8:25 pm",
+    "Alumnae_in":"8:55 pm", "Chapel_in":"9:00 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"8:00 pm", "Alumnae_out":"8:05 pm",
+    "Harvard Sq.":"8:45 pm", "77 Mass Ave.":"9:00 pm", "Marlboro Market":"9:05 pm",
+    "Alumnae_in":"9:30 pm", "Chapel_in":"9:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"8:40 pm", "Alumnae_out":"8:45 pm",
+    "Harvard Sq.":"9:20 pm", "77 Mass Ave.":"9:35 pm", "Marlboro Market":"9:40 pm",
+    "Alumnae_in":"10:05 pm", "Chapel_in":"10:10 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"9:20 pm", "Alumnae_out":"9:25 pm",
+    "Harvard Sq.":"10:00 pm", "77 Mass Ave.":"10:15 pm", "Marlboro Market":"10:20 pm",
+    "Alumnae_in":"10:45 pm", "Chapel_in":"10:50 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"10:00 pm", "Alumnae_out":"10:05 pm",
+    "Harvard Sq.":"10:40 pm", "77 Mass Ave.":"11:00 pm", "Marlboro Market":"11:05 pm",
+    "Alumnae_in":"11:30 pm", "Chapel_in":"11:35 pm"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"10:40 pm", "Alumnae_out":"10:45 pm",
+    "Harvard Sq.":"11:20 pm", "77 Mass Ave.":"11:35 pm", "Marlboro Market":"11:40 pm",
+    "Alumnae_in":"12:05 am", "Chapel_in":"12:10 am"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"11:20 pm", "Alumnae_out":"11:25 pm",
+    "Harvard Sq.":"12:00 am", "77 Mass Ave.":"12:15 am", "Marlboro Market":"12:20 am",
+    "Alumnae_in":"12:45 am", "Chapel_in":"12:50 am"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"12:00 am", "Alumnae_out":"12:05 am",
+    "Harvard Sq.":"12:30 am", "77 Mass Ave.":"12:45 am", "Marlboro Market":"12:50 am",
+    "Alumnae_in":"1:15 am", "Chapel_in":"1:20 am"
+  }},
+  {bus: "A", stopTimes: {
+    "Chapel_out":"12:40 am", "Alumnae_out":"12:45 am",
+    "Harvard Sq.":"1:20 am", "77 Mass Ave.":"1:35 am", "Marlboro Market":"1:40 am",
+    "Alumnae_in":"2:05 am", "Chapel_in":"2:10 am"
+  }},
+];
+// Saturday malls & movies shuttle
 const mallsMoviesShuttle = [
   {bus: "Shuttle", stopTimes: {
     "Founders_in":"11:00 am", "Macy's":"11:20 am", "AMC Theater":"11:25 am",
@@ -394,7 +436,6 @@ const mallsMoviesShuttle = [
     "Barnes & Noble":"9:30 pm", "Target":"9:35 pm"
   }},
 ];
-
 // Exchange Bus departure schedule (Mon–Fri)
 const exchangeBus = [
   {bus: "B", stopTimes: {
@@ -451,7 +492,6 @@ const exchangeBus = [
     "Kendall Sq. T Stop":"5:30 pm", "77 Mass Ave.":"5:35 pm", "Marlboro Market":"5:40 pm",
     "Alumnae_in":"6:30 pm", "Chapel_in":"6:35 pm"
   }},
-  // * Last Exchange Bus from campus on Fridays
   {bus: "A", stopTimes: {
     "Chapel_out":"5:30 pm", "Alumnae_out":"5:35 pm",
     "350 Mass Ave.":"6:20 pm", "Vassar St., Bldg 34":"6:25 pm",
@@ -476,7 +516,6 @@ const exchangeBus = [
     "Kendall Sq. T Stop":"9:00 pm", "77 Mass Ave.":"9:05 pm", "Marlboro Market":"9:10 pm",
     "Alumnae_in":"10:00 pm", "Chapel_in":"10:05 pm"
   }},
-  // ** Last bus from campus
   {bus: "C", stopTimes: {
     "Chapel_out":"9:00 pm", "Alumnae_out":"9:05 pm",
     "350 Mass Ave.":"9:50 pm", "Vassar St., Bldg 34":"9:55 pm",
@@ -485,64 +524,21 @@ const exchangeBus = [
   }},
 ];
 
-  // Helper functions
-  function timeToMinutes(t) {
-    if (!t) return null;
-    let [time, meridiem] = t.toLowerCase().split(' ');
-    let [h, m] = time.split(':').map(Number);
-    if(meridiem === 'pm' && h !== 12) h += 12;
-    if(meridiem === 'am' && h === 12) h = 0;
-    return h*60 + m;
-  }
-  function nowMinutes() {
-    let d = new Date();
-    return d.getHours()*60 + d.getMinutes();
-  }
-  function distanceKm(lat1, lon1, lat2, lon2) {
-    const R=6371;
-    const dLat=(lat2 - lat1) * (Math.PI/180);
-    const dLon=(lon2 - lon1) * (Math.PI/180);
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * (Math.PI/180)) *
-              Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-  function walkingMinutes(distance) {
-    return Math.round(distance / 5 * 60);
-  }
-  function formatDatetime() {
-    return (new Date()).toLocaleString("en-US", {weekday:"long", year:"numeric", month:"long", day:"numeric", hour:"2-digit", minute:"2-digit", hour12:true});
-  }
+/** (Helper, presentation, and main logic continues as in previous code) **/
 
-  // Determine if user is on campus roughly (within 1 km of Chapel_out)
-  function userIsOnCampus(lat, lon) {
-  return campusStops.some(key => distanceKm(lat, lon, stops[key].lat, stops[key].lon) < 1.0); 
-}
-  
-// Given a schedule, return all unique stops actually served today (inbound or outbound)
-function getActiveStops(schedule, direction) {
+function getActiveStops(schedule) {
   const active = new Set();
   for (const trip of schedule) {
     for (const stopKey in trip.stopTimes) {
-      if (
-        (direction === "out" && stopKey.endsWith("_out")) ||
-        (direction === "in" && stopKey.endsWith("_in"))
-      ) {
-        active.add(stopKey);
-      }
+      active.add(stopKey);
     }
   }
   return Array.from(active);
 }
-
-  function findClosestActiveStop(lat, lon, schedule, direction) {
-  // direction: "out" or "in"
+function findClosestStop(lat, lon, schedule) {
   let candidates = new Set();
   schedule.forEach(trip => {
-    Object.entries(trip.stopTimes).forEach(([stop, time]) => {
-      if ((direction === "out" && stop.endsWith("_out")) || (direction === "in" && stop.endsWith("_in"))) {
-        candidates.add(stop);
-      }
-    });
+    Object.keys(trip.stopTimes).forEach(stop => candidates.add(stop));
   });
   let minDist = Infinity, closestStop = null;
   candidates.forEach(stopKey => {
@@ -556,45 +552,27 @@ function getActiveStops(schedule, direction) {
   });
   return closestStop;
 }
-
-  // Get next bus coming to the stop for given schedule array
-  function getNextBus(schedule, stopName) {
-    const now = nowMinutes();
-    let nextBus = null;
-    let minTime = Infinity;
-
-    for (const trip of schedule) {
-      const t = timeToMinutes(trip.stopTimes[stopName]);
-      if (t !== null && t >= now && t < minTime) {
-        minTime = t;
-        nextBus = { bus: trip.bus, time: trip.stopTimes[stopName], stopName };
-      }
+function getNextBus(schedule, stopName) {
+  const now = nowMinutes();
+  let nextBus = null;
+  let minTime = Infinity;
+  for (const trip of schedule) {
+    const t = timeToMinutes(trip.stopTimes[stopName]);
+    if (t !== null && t >= now && t < minTime) {
+      minTime = t;
+      nextBus = { bus: trip.bus, time: trip.stopTimes[stopName], stopName };
     }
-    return nextBus;
   }
-
+  return nextBus;
+}
 function buildScheduleTable(schedule, color) {
   const stopSet = new Set();
   schedule.forEach(trip => {
     Object.keys(trip.stopTimes).forEach(stop => stopSet.add(stop));
   });
   const orderedStops = Array.from(stopSet);
-
   const headers = orderedStops.map(s => stops[s]?.label || s).join('</th><th>');
-
-  const tableWrapperStyle = `
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-  `;
-  // reduce min-width here too to fit phone better
-  const tableStyle = `
-    background: ${color}11;
-    border-radius: 10px;
-    min-width: 400px;
-  `;
-
-  let html = `<div style="${tableWrapperStyle}"><table style="${tableStyle}"><thead><tr><th>Bus</th><th>${headers}</th></tr></thead><tbody>`;
+  let html = `<div style="overflow-x:auto;width:100%;"><table style="background:${color}11;border-radius:10px;min-width:400px;"><thead><tr><th>Bus</th><th>${headers}</th></tr></thead><tbody>`;
   for (const trip of schedule) {
     html += '<tr><td>' + trip.bus + '</td>';
     for (const stopName of orderedStops) {
@@ -605,8 +583,7 @@ function buildScheduleTable(schedule, color) {
   html += '</tbody></table></div>';
   return html;
 }
-
-  function getTodaySchedules() {
+function getTodaySchedules() {
   const now = new Date();
   const day = now.getDay();
   if (day === 0) return [ {title: "Senate Shuttle", color:"#df5dab", schedule:sundaySenate} ];
@@ -620,19 +597,15 @@ function buildScheduleTable(schedule, color) {
   ];
   return [ {title:"Exchange Bus", color:"#dfa55d", schedule:exchangeBus} ];
 }
-
-  // Main logic - called with user location lat/lon
-  function main(lat, lon) {
+/* =========== MAIN SEARCH LOGIC =========== */
+function main(lat, lon) {
   const nowStr = formatDatetime();
   document.getElementById('now').innerHTML = `<span style="color:var(--label-blue);font-weight:bold;">Today is ${nowStr}</span>`;
-
   const onCampus = userIsOnCampus(lat, lon);
-  const userDirection = onCampus ? "out" : "in";
   const todaySchedules = getTodaySchedules();
-
   let html = "";
   todaySchedules.forEach(entry => {
-    const closest = findClosestActiveStop(lat, lon, entry.schedule, userDirection);
+    const closest = findClosestStop(lat, lon, entry.schedule);
     const nextBus = closest ? getNextBus(entry.schedule, closest.key) : null;
     let resultHtml = "";
     if (closest) {
@@ -641,6 +614,7 @@ function buildScheduleTable(schedule, color) {
       } else {
         resultHtml = `<div>No more buses today for stop <b>${closest.stop.label}</b>.</div>`;
       }
+      resultHtml += `<div style="font-size:0.95em;color:#444;">You are <b>${onCampus ? "on campus" : "not on campus"}</b>.</div>`;
       resultHtml += `<div class="walk-time" style="color:${entry.color};">Estimated walking time: ${walkingMinutes(closest.dist)} minutes (~${closest.dist.toFixed(2)} km)</div>`;
     }
     html += `<div class="shuttle-table-wrap">
@@ -649,23 +623,21 @@ function buildScheduleTable(schedule, color) {
       ${buildScheduleTable(entry.schedule, entry.color)}
     </div>`;
   });
-
   document.getElementById('schedule').innerHTML = html;
 }
-
-  // On page load, get geolocation and run main
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      main(pos.coords.latitude, pos.coords.longitude);
-    }, err => {
-      document.getElementById('status').textContent = "Location permission denied or unavailable.";
-      document.getElementById('now').textContent = `(Unable to access location)`;
-      document.getElementById('result').textContent = "Enable location to see next buses and walking times.";
-      document.getElementById('schedule').innerHTML = buildScheduleTable(sundaySenate, true);
-    });
-  } else {
-    document.getElementById('status').textContent = "Geolocation not supported on this device.";
-  }
+// On page load: get user's location and call main(lat, lon)
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(pos => {
+    main(pos.coords.latitude, pos.coords.longitude);
+  }, err => {
+    document.getElementById('status').textContent = "Location permission denied or unavailable.";
+    document.getElementById('now').textContent = `(Unable to access location)`;
+    document.getElementById('result').textContent = "Enable location to see next buses and walking times.";
+    document.getElementById('schedule').innerHTML = buildScheduleTable(sundaySenate, "#df5dab");
+  });
+} else {
+  document.getElementById('status').textContent = "Geolocation not supported on this device.";
+}
 </script>
 </body>
 </html>
