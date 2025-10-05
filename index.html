@@ -186,7 +186,7 @@ function distanceKm(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 function walkingMinutes(distanceKm) {
-  return Math.round(distanceKm / 5 * 60);
+  return Math.round(distanceKm / 3 * 60);
 }
 function timeToMinutes(t) {
   if (!t) return null;
